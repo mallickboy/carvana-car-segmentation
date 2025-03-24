@@ -33,20 +33,20 @@ async def create_upload_file(file: UploadFile = File(...)):
     image = Image.open(io.BytesIO(img_bytes))   # reading original
 
     # inverted_image = MODEL.invert_image(image)        # process predict
-    inverted_image = MODEL.predict_image(image)        # process predict
+    org_resized, pred = MODEL.predict_image(image)        # process predict
 
     original_img_byte_arr = io.BytesIO()
-    inverted_img_byte_arr = io.BytesIO()
+    output_img_byte_arr = io.BytesIO()
 
-    image.save(original_img_byte_arr, format="PNG")
-    inverted_image.save(inverted_img_byte_arr, format="PNG")
+    org_resized.save(original_img_byte_arr, format="PNG")
+    pred.save(output_img_byte_arr, format="PNG")
 
     original_img_byte_arr.seek(0)
-    inverted_img_byte_arr.seek(0)
+    output_img_byte_arr.seek(0)
 
     # generate HTML content
     original_base64 = base64.b64encode(original_img_byte_arr.getvalue()).decode('utf-8')
-    inverted_base64 = base64.b64encode(inverted_img_byte_arr.getvalue()).decode('utf-8')
+    inverted_base64 = base64.b64encode(output_img_byte_arr.getvalue()).decode('utf-8')
 
     html_content = f"""
     <html>

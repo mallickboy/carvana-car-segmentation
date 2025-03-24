@@ -2,9 +2,11 @@ from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import HTMLResponse
 import io
 import base64  
-from modules.cnn import *
+from modules.cnn import model
+from PIL import Image
 
 
+MODEL= model(path= "./modules/model.keras")
 
 app = FastAPI()
 
@@ -30,7 +32,8 @@ async def create_upload_file(file: UploadFile = File(...)):
     img_bytes = await file.read()
     image = Image.open(io.BytesIO(img_bytes))   # reading original
 
-    inverted_image = invert_image(image)        # process predict
+    # inverted_image = MODEL.invert_image(image)        # process predict
+    inverted_image = MODEL.predict_image(image)        # process predict
 
     original_img_byte_arr = io.BytesIO()
     inverted_img_byte_arr = io.BytesIO()
@@ -41,7 +44,7 @@ async def create_upload_file(file: UploadFile = File(...)):
     original_img_byte_arr.seek(0)
     inverted_img_byte_arr.seek(0)
 
-    # Generate HTML content
+    # generate HTML content
     original_base64 = base64.b64encode(original_img_byte_arr.getvalue()).decode('utf-8')
     inverted_base64 = base64.b64encode(inverted_img_byte_arr.getvalue()).decode('utf-8')
 
@@ -59,7 +62,7 @@ async def create_upload_file(file: UploadFile = File(...)):
                     <img src="data:image/png;base64,{original_base64}" alt="Original Image" style="height: 50vh; max-width: 100%; object-fit: contain;">
                 </div>
                 <div style="text-align: center; flex: 1 1 200px;">
-                    <h2>Inverted Image</h2>
+                    <h2>Prediction</h2>
                     <img src="data:image/png;base64,{inverted_base64}" alt="Inverted Image" style="height: 50vh; max-width: 100%; object-fit: contain;">
                 </div>
             </div>

@@ -18,4 +18,12 @@ py -3.11 -m venv .venv
 
 pip install -r requirements.txt
 ```
+#### Run server
+```
+uvicorn server:app
 
+http://127.0.0.1:8000
+```
+#### Deactivate Virtual Environment
+
+```

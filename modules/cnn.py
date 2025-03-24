@@ -1,37 +1,31 @@
 import numpy as np
 from PIL import Image
-import tensorflow as tf
+from tensorflow.keras.models import load_model
 
-interpreter = tf.lite.Interpreter(model_path="model.tflite")
-interpreter.allocate_tensors()
+class model:
+    def __init__(self, path):
+        self.model = load_model(path, compile=False)
 
-def invert_image(image: Image.Image) -> Image.Image:
-    img_array = np.array(image)
-    inverted_array = 255 - img_array  # Invert the colors
-    inverted_image = Image.fromarray(inverted_array)
-    return inverted_image
+    def invert_image(self, image: Image.Image) -> Image.Image:
+        img_array = np.array(image)
+        inverted_array = 255 - img_array  # invert the colors
+        inverted_image = Image.fromarray(inverted_array)
+        return inverted_image
 
-def predict_image(image: Image.Image) -> Image.Image:
-    img_array= np.array(image)
-    # my model takes input shape ( 128, 128, 3)
-    img_resized = np.resize(img_array, (128, 128, 3))
-    img_resized = img_resized.astype(np.float32) / 255.0
+    def predict_image(self, image: Image.Image) -> Image.Image:     # TESTED
+        img_array= np.array(image)
 
-    img_resized = np.expand_dims(img_resized, axis=0)
+        # my model takes input shape ( 128, 128, 3)
+        img_resized = Image.fromarray(img_array).resize((128, 128)) # using pil to resize the image
+        
+        # plt.imshow(img_resized)
+        # plt.show()
 
-    input_details = interpreter.get_input_details()
-    output_details = interpreter.get_output_details()
+        img_resized = np.array(img_resized).astype(np.float32) / 255.0
+        img_resized = np.expand_dims(img_resized, axis=0) # shape (1, 128, 128, 3)) as it takes batch of images
 
-    input_index = input_details[0]['index']
-    output_index = output_details[0]['index']
+        prediction = self.model.predict(img_resized)
+        prediction = prediction.squeeze() 
+        prediction = (prediction > 0.5).astype(np.uint8)
 
-
-    interpreter.set_tensor(input_index, img_resized)
-    interpreter.invoke()
-
-    prediction = interpreter.get_tensor(output_index)
-    prediction = prediction.squeeze() 
-    prediction = (prediction > 0.5).astype(np.uint8)
-
-    prediction_image = Image.fromarray((prediction * 255).astype(np.uint8))
-    return prediction_image
+        return Image.fromarray((prediction * 255).astype(np.uint8))

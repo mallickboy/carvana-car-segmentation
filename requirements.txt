@@ -3,4 +3,4 @@ uvicorn
 pillow 
 numpy
 python-multipart
-tflite-runtime
+tensorflow-cpu
